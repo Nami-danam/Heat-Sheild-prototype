@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HEAT-SHIELD prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wdth,wght@75..125,100..800&family=Mukta:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9EFF1; --surface:#FAFCFC; --sunk:#DFE7EA;
+  --ink:#10272F; --muted:#51666D; --line:#C5D2D6;
+  --accent:#0C5566; --on-accent:#FFFFFF;
+  --r1:#1F8073; --r2:#E2A91A; --r3:#CF4E12; --r4:#A70F3C;
+  --on-r1:#FFFFFF; --on-r2:#2A1E00; --on-r3:#FFFFFF; --on-r4:#FFFFFF;
+  --display:"Anek Latin","Avenir Next Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"Mukta","Noto Sans","Segoe UI",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C181D; --surface:#13252C; --sunk:#0F1E24;
+    --ink:#E4EDEF; --muted:#93A8AE; --line:#294049;
+    --accent:#74CADB; --on-accent:#06242B;
+    --r1:#3BB09F; --r2:#EFBC3D; --r3:#F27B3C; --r4:#E33B6E;
+    --on-r1:#04211D; --on-r2:#2A1E00; --on-r3:#2B0E00; --on-r4:#FFFFFF;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C181D; --surface:#13252C; --sunk:#0F1E24;
+  --ink:#E4EDEF; --muted:#93A8AE; --line:#294049;
+  --accent:#74CADB; --on-accent:#06242B;
+  --r1:#3BB09F; --r2:#EFBC3D; --r3:#F27B3C; --r4:#E33B6E;
+  --on-r1:#04211D; --on-r2:#2A1E00; --on-r3:#2B0E00; --on-r4:#FFFFFF;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.l1{--lv:var(--r1);--on:var(--on-r1)}
+.l2{--lv:var(--r2);--on:var(--on-r2)}
+.l3{--lv:var(--r3);--on:var(--on-r3)}
+.l4{--lv:var(--r4);--on:var(--on-r4)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:10px 18px;display:flex;align-items:center;gap:18px}
+.mark{white-space:nowrap;flex:none;display:flex;align-items:center;gap:9px;font-family:var(--display);font-stretch:80%;font-weight:800;font-size:25px;letter-spacing:.01em;line-height:1}
+.mark svg{width:26px;height:30px;flex:none}
+.tabs{display:flex;gap:2px;margin-left:10px}
+.tab{border:0;background:none;padding:9px 13px;border-radius:5px;font-weight:500;color:var(--muted)}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--surface)}
+.who{min-width:0;flex:0 1 auto;margin-left:auto;border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:5px 12px;text-align:left;line-height:1.2;max-width:46vw}
+.who b{display:block;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{font-size:13.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.proto{background:var(--sunk);border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+.proto p{max-width:1180px;margin:0 auto;padding:6px 18px}
+
+main{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+.view-head{margin-bottom:18px}
+.view-head h1{font-family:var(--display);font-stretch:85%;font-weight:700;font-size:clamp(28px,4.4vw,40px);line-height:1.08}
+.view-head p{color:var(--muted);max-width:68ch;margin-top:4px}
+h2{font-family:var(--display);font-stretch:90%;font-weight:700;font-size:22px;line-height:1.2}
+h3{font-size:16px;font-weight:700}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px}
+.panel > h2{margin-bottom:10px}
+.note{font-size:14.5px;color:var(--muted)}
+.grid2{display:grid;gap:16px;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}
+.stack{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.chip{display:inline-block;background:var(--lv);color:var(--on);font-weight:700;border-radius:99px;padding:2px 12px;font-size:15px;line-height:1.5}
+
+/* hero ruler */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:20px 20px 16px}
+.hero-top{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.big{font-family:var(--display);font-stretch:75%;font-weight:700;font-size:clamp(84px,15vw,128px);line-height:.82;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.big small{font-size:.26em;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:4px}
+.hero-say{padding-bottom:6px;max-width:44ch}
+.hero-say p{margin-top:6px}
+.ruler{position:relative;margin:54px 26px 28px}
+.ruler.cmp{margin-bottom:70px}
+.track{display:flex;height:30px;border-radius:4px;overflow:hidden}
+.seg{background:var(--lv);color:var(--on);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden}
+.ticks{position:absolute;left:0;right:0;top:32px;height:14px;font-size:12px;color:var(--muted);pointer-events:none}
+.ticks span{position:absolute;transform:translateX(-50%)}
+.pin{position:absolute;transform:translateX(-50%);text-align:center;white-space:nowrap;font-size:13.5px;line-height:1.15;transition:left .6s cubic-bezier(.2,.7,.2,1)}
+.pin b{font-family:var(--display);font-stretch:80%;font-size:19px;display:block}
+.pin::after{content:"";position:absolute;left:50%;width:3px;margin-left:-1.5px;background:var(--ink)}
+.pin-you{bottom:calc(100% + 10px)}
+.pin-you::after{top:100%;height:44px}
+.pin-ref{top:calc(100% + 24px);color:var(--muted)}
+.pin-ref::after{bottom:100%;height:54px;background:var(--muted);width:2px;margin-left:-1px}
+@media (prefers-reduced-motion:reduce){.pin{transition:none}}
+
+/* forecast */
+.days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.day{border:1px solid var(--line);background:var(--bg);border-radius:5px;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.day[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--surface)}
+.day .col{height:84px;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.day .bar{width:58%;max-width:44px;background:var(--lv);border-radius:3px 3px 0 0}
+.day .n{font-family:var(--display);font-stretch:80%;font-weight:700;font-size:22px;line-height:1}
+.day .d{font-size:13.5px;color:var(--muted)}
+.day .y{font-size:12.5px;color:var(--muted)}
+.daychips{display:flex;gap:6px;flex-wrap:wrap}
+.daychip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:4px 14px;font-weight:500}
+.daychip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* readings */
+.reads{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+.reads div{background:var(--surface);padding:10px 12px}
+.reads dt{font-size:14px;color:var(--muted)}
+.reads dd{margin:0;font-family:var(--display);font-stretch:85%;font-weight:600;font-size:24px;line-height:1.15;font-variant-numeric:tabular-nums}
+.reads dd small{font-size:14px;font-weight:500;color:var(--muted);font-family:var(--body)}
+dl{margin:0}
+.idx{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.idx div{border-left:3px solid var(--ink);padding-left:10px}
+.idx dt{font-size:13.5px;color:var(--muted)}
+.idx dd{margin:0;font-weight:700}
+
+/* waterfall */
+.wf{display:grid;gap:7px;margin-top:6px}
+.wf-row{display:grid;grid-template-columns:150px 46px 1fr;align-items:center;gap:8px;font-size:15px}
+.wf-row .v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.wf-row .b{height:14px;background:var(--sunk);border-radius:2px;overflow:hidden}
+.wf-row .b i{display:block;height:100%;background:var(--r3)}
+.wf-row.neg .b i{background:var(--r1)}
+.wf-row.base .b i{background:var(--muted)}
+.wf-total{border-top:1px solid var(--line);padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;font-weight:700}
+
+/* personal */
+.lists{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+.lists ul{display:grid;gap:5px;margin-top:5px}
+.lists li{padding-left:16px;position:relative;font-size:16px;line-height:1.4}
+.lists li::before{content:"";position:absolute;left:0;top:.55em;width:7px;height:7px;border-radius:50%;background:var(--ink)}
+.sos{margin-top:14px;border:2px solid var(--r4);border-radius:5px;padding:10px 12px;font-size:15.5px}
+.sos b{color:var(--r4)}
+.linkbtn{border:0;background:none;padding:0;color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+
+/* map */
+.mapwrap{position:relative}
+.mapwrap svg{display:block;width:100%;height:auto}
+.ward{fill:var(--lv);stroke:var(--surface);stroke-width:3;cursor:pointer;transition:fill .3s}
+.ward:hover{filter:brightness(1.08)}
+.ward.sel{stroke:var(--ink);stroke-width:4}
+.wl{fill:var(--on);font-family:var(--display);font-weight:700;pointer-events:none;text-anchor:middle}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:14px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;background:var(--lv);vertical-align:-2px;margin-right:5px}
+.kv{display:grid;grid-template-columns:1fr auto;gap:5px 14px;font-size:16px;margin:10px 0 14px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.btn{border:0;background:var(--accent);color:var(--on-accent);font-weight:700;border-radius:5px;padding:9px 16px}
+.btn.ghost{background:none;color:var(--accent);border:1.5px solid var(--accent)}
+.btn[disabled]{opacity:.5;cursor:default}
+
+/* tables */
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15.5px}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap;font-variant-numeric:tabular-nums}
+th{font-weight:500;color:var(--muted);font-size:14px}
+th:first-child,td:first-child{text-align:left}
+td.locked{color:var(--muted);font-style:italic}
+.chart text{fill:var(--ink);font-family:var(--body);font-size:15px}
+.chart .yr{fill:var(--muted)}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.slot{border:1.5px dashed var(--line);border-radius:5px;padding:12px;background:var(--bg)}
+.slot .st{display:inline-block;font-size:13px;font-weight:700;border:1px solid var(--muted);color:var(--muted);border-radius:99px;padding:0 9px;margin-bottom:6px}
+.slot p{font-size:14.5px;color:var(--muted);margin-top:3px}
+.ask{border-left:4px solid var(--ink);padding:4px 0 4px 14px;font-size:18px;line-height:1.4;max-width:60ch}
+
+/* simulator */
+.ctrl{display:grid;gap:14px}
+.ctrl label{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-weight:500}
+.ctrl output{font-family:var(--display);font-stretch:85%;font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.ctrl input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--accent);height:28px;margin:0}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.simscore{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.simscore .big{font-size:clamp(72px,11vw,104px)}
+.meter{height:12px;border-radius:3px;background:linear-gradient(90deg,var(--r1) 0 40%,var(--r2) 40% 60%,var(--r3) 60% 80%,var(--r4) 80%);position:relative;margin:4px 0 18px}
+.meter i{position:absolute;top:-5px;width:4px;height:22px;background:var(--ink);margin-left:-2px;border-radius:2px}
+.pipe{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:stretch;margin-top:12px}
+.pipe .box{border:1px solid var(--line);border-radius:5px;padding:12px;background:var(--bg)}
+.pipe .box.mid{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pipe .box.mid .note{color:inherit;opacity:.8}
+.pipe .box li{font-size:15px;line-height:1.35;margin-top:4px}
+.pipe .arr{align-self:center;width:26px;height:2px;background:var(--ink);position:relative}
+.pipe .arr::after{content:"";position:absolute;right:-1px;top:-5px;border-left:9px solid var(--ink);border-top:6px solid transparent;border-bottom:6px solid transparent}
+
+/* actions */
+.rank{display:grid;gap:10px;counter-reset:r}
+.rank li{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:start;border-bottom:1px solid var(--line);padding-bottom:10px}
+.rank li:last-child{border-bottom:0;padding-bottom:0}
+.rank li::before{counter-increment:r;content:counter(r);font-family:var(--display);font-stretch:75%;font-weight:700;font-size:34px;line-height:.9}
+.rank p{font-size:15px;color:var(--muted);line-height:1.4}
+.rank .sc{font-family:var(--display);font-stretch:80%;font-weight:700;font-size:26px;line-height:1;text-align:right}
+.depts{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.depts ul{display:grid;gap:6px;margin-top:6px}
+.depts li{display:grid;grid-template-columns:20px 1fr;gap:8px;font-size:16px;line-height:1.4}
+.depts li::before{content:"";width:14px;height:14px;border:2px solid var(--ink);border-radius:3px;margin-top:5px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-family:var(--display);font-stretch:85%;font-weight:700;font-size:20px;margin-top:8px}
+.flow i{width:22px;height:2px;background:var(--ink)}
+
+/* dialog */
+.veil{position:fixed;inset:0;background:rgba(6,20,25,.62);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:max(20px,env(safe-area-inset-top,0px)) 14px 20px;overflow-y:auto}
+.veil[hidden]{display:none}
+.sheet{background:var(--surface);border-radius:8px;max-width:620px;width:100%;padding:22px;margin:auto 0}
+.sheet h2{font-size:27px;outline:none}
+.sheet h3{margin:18px 0 8px}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.opt{border:1.5px solid var(--line);background:var(--bg);border-radius:5px;padding:7px 10px;text-align:left;line-height:1.25;min-width:0}
+.opt[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--surface)}
+.opt small{display:block;font-size:13.5px;opacity:.75}
+.sheet-foot{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:20px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;white-space:nowrap;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:9px 18px;border-radius:99px;font-weight:500;z-index:60;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.on{opacity:1}
+
+@media (max-width:860px){
+  body{font-size:16.5px}
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0;gap:0;background:var(--surface);border-top:1px solid var(--line);padding:0 4px env(safe-area-inset-bottom,0px)}
+  .tab{flex:1;border-radius:0;padding:14px 2px 13px;font-size:15px;border-top:3px solid transparent}
+  .tab[aria-selected="true"]{background:none;color:var(--ink);border-top-color:var(--ink);font-weight:700}
+  main{padding:16px 14px 96px}
+  .top-in{padding:9px 14px}
+  .proto p{padding:5px 14px}
+  .grid2{grid-template-columns:minmax(0,1fr)}
+  .lists{grid-template-columns:1fr}
+  .slots{grid-template-columns:1fr}
+  .depts{grid-template-columns:1fr}
+  .pipe{grid-template-columns:1fr}
+  .pipe .arr{width:2px;height:20px;justify-self:center}
+  .pipe .arr::after{right:-5px;top:auto;bottom:-1px;border-top:9px solid var(--ink);border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:0}
+  .wf-row{grid-template-columns:118px 40px 1fr;font-size:14.5px}
+  .ruler{margin-left:20px;margin-right:20px}
+  .seg{font-size:11.5px}
+  .hero{padding:16px 14px 12px}
+  .flow{font-size:17px;gap:6px}
+  .flow i{width:14px}
+  th,td{padding:7px 6px}
+  .panel{padding:15px 14px}
+}
+@media (max-width:420px){
+  .mark{font-size:21px}
+  .idx{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="mark" aria-label="HEAT-SHIELD">
+      <svg viewBox="0 0 26 30" aria-hidden="true"><path d="M13 1 2 5v9c0 7 4.6 12.2 11 15 6.4-2.8 11-8 11-15V5L13 1Z" fill="var(--ink)"/><path d="M13 8.5c2.6 3 4.3 5 4.3 7.6a4.3 4.3 0 0 1-8.6 0c0-1.5.6-2.6 1.6-3.8.3 1 .9 1.6 1.6 1.9-.3-2 .1-3.9 1.1-5.7Z" fill="var(--r3)"/></svg>
+      HEAT-SHIELD
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" data-tab="today">Today</button>
+      <button class="tab" role="tab" data-tab="map">Map</button>
+      <button class="tab" role="tab" data-tab="history">History</button>
+      <button class="tab" role="tab" data-tab="model">Model</button>
+      <button class="tab" role="tab" data-tab="actions">Actions</button>
+    </nav>
+    <button class="who" id="who" aria-haspopup="dialog"></button>
+  </div>
+</header>
+<div class="proto"><p>Prototype. Weather, ward and past-season figures are simulated to show how the product works. No health records are shown.</p></div>
+
+<main id="main" tabindex="-1"></main>
+
+<div class="veil" id="veil" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h2 id="sheetTitle" tabindex="-1"></h2>
+    <p class="note" id="sheetLead"></p>
+    <h3>Your area</h3>
+    <div class="opts" id="optWards"></div>
+    <h3>Your health profile</h3>
+    <div class="opts" id="optProfiles"></div>
+    <div class="sheet-foot">
+      <span class="note">Saved only on this device. Change it any time from the top bar.</span>
+      <button class="btn" id="saveProfile">Save profile</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------- model (transparent stand-in for the trained ML model) ---------- */
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function wetBulb(T,RH){ // Stull 2011 approximation
+  return T*Math.atan(0.151977*Math.sqrt(RH+8.313659))+Math.atan(T+RH)-Math.atan(RH-1.676331)
+    +0.00391838*Math.pow(RH,1.5)*Math.atan(0.023101*RH)-4.686035;
+}
+function wbgt(x){ // simplified outdoor WBGT estimate
+  const dTg=0.014*x.S/(1+0.04*x.W);
+  const tnw=wetBulb(x.T,x.RH)+0.12*dTg;
+  return 0.7*tnw+0.2*(x.T+dTg)+0.1*x.T;
+}
+function heatIndex(T,RH){ // NWS Rothfusz regression, returned in deg C
+  const F=T*9/5+32;
+  let hi=0.5*(F+61+(F-68)*1.2+RH*0.094);
+  if((hi+F)/2>=80){
+    hi=-42.379+2.04901523*F+10.14333127*RH-0.22475541*F*RH-0.00683783*F*F-0.05481717*RH*RH
+      +0.00122874*F*F*RH+0.00085282*F*RH*RH-0.00000199*F*F*RH*RH;
+    if(RH<13&&F>=80&&F<=112) hi-=((13-RH)/4)*Math.sqrt((17-Math.abs(F-95))/17);
+    else if(RH>85&&F>=80&&F<=87) hi+=((RH-85)/10)*((87-F)/5);
+  }
+  return (hi-32)*5/9;
+}
+function riskRaw(x){
+  const hazard=100*clamp((wbgt(x)-21)/17,0,1);
+  return hazard*(0.6+0.4*x.V/100);
+}
+const risk=x=>Math.round(riskRaw(x));
+const REF={T:30,RH:30,S:300,W:15,V:30};
+const FACTORS=[['T','Air temperature'],['RH','Humidity'],['S','Solar radiation'],['W','Wind'],['V','Local vulnerability']];
+function explain(x){
+  const cur={...REF}; let prev=riskRaw(cur); const base=prev; const rows=[];
+  for(const [k,label] of FACTORS){ cur[k]=x[k]; const s=riskRaw(cur); rows.push({k,label,v:s-prev}); prev=s; }
+  return {base,rows,total:prev};
+}
+const LV=[null,{c:'l1',name:'Lower'},{c:'l2',name:'Moderate'},{c:'l3',name:'High'},{c:'l4',name:'Very high'}];
+const lvl=s=>s>=80?4:s>=60?3:s>=40?2:1;
+
+/* ---------- simulated data ---------- */
+const DAYS=[
+  {label:'Today',T:38.4,RH:37,S:760,W:10},
+  {label:'Day 2',T:39.2,RH:38,S:780,W:9},
+  {label:'Day 3',T:39.6,RH:39,S:790,W:9},
+  {label:'Day 4',T:40.2,RH:39,S:800,W:8},
+  {label:'Day 5',T:39.0,RH:40,S:740,W:11}
+];
+const WARDS=[
+  {id:'A',name:'Old Market',     cell:[1,1],V:88,dT:1.8, dRH:2, green:4, elderly:14,outdoor:38},
+  {id:'B',name:'Railway Colony', cell:[0,2],V:71,dT:1.0, dRH:0, green:9, elderly:11,outdoor:31},
+  {id:'C',name:'Industrial Belt',cell:[0,3],V:82,dT:2.1, dRH:-2,green:3, elderly:8, outdoor:46},
+  {id:'D',name:'Riverside Ghats',cell:[2,1],V:64,dT:-0.4,dRH:8, green:14,elderly:13,outdoor:29},
+  {id:'E',name:'Civil Lines',    cell:[1,0],V:26,dT:-1.6,dRH:0, green:31,elderly:16,outdoor:9},
+  {id:'F',name:'University Area',cell:[2,3],V:41,dT:-0.5,dRH:0, green:27,elderly:7, outdoor:12},
+  {id:'G',name:'New Township',   cell:[2,2],V:46,dT:0.3, dRH:0, green:16,elderly:9, outdoor:15},
+  {id:'H',name:'Bus Stand Area', cell:[1,2],V:76,dT:1.5, dRH:0, green:5, elderly:10,outdoor:41},
+  {id:'I',name:'Mill Area',      cell:[1,3],V:79,dT:1.3, dRH:1, green:6, elderly:12,outdoor:37},
+  {id:'J',name:'Lake View',      cell:[2,0],V:15,dT:-2.6,dRH:3, green:38,elderly:15,outdoor:7},
+  {id:'K',name:'Station Road',   cell:[0,1],V:62,dT:0,   dRH:0, green:11,elderly:12,outdoor:24},
+  {id:'L',name:'Green Park',     cell:[0,0],V:34,dT:-1.1,dRH:0, green:34,elderly:18,outdoor:8}
+];
+const WARD=Object.fromEntries(WARDS.map(w=>[w.id,w]));
+const MESH=[
+  [[62,52],[172,24],[305,40],[452,22],[560,60]],
+  [[24,158],[150,142],[318,166],[440,138],[598,168]],
+  [[36,286],[176,300],[300,272],[466,296],[590,276]],
+  [[72,388],[166,414],[314,400],[450,416],[552,380]]
+];
+const PROFILES=[
+  {id:'normal',name:'No known condition',tag:'no known condition',sens:1,
+   title:'What this heat can mean for you',
+   how:'Your body cools itself by sweating and by sending more blood to the skin. Long exposure or hard physical work in this heat can still lead to dehydration, heat cramps and heat exhaustion.',
+   watch:['Heavy sweating with headache or dizziness','Muscle cramps','Nausea or unusual tiredness'],
+   help:['Drink water through the day, before you feel thirsty','Rest in shade during outdoor work']},
+  {id:'cardio',name:'Cardiovascular',tag:'a heart condition',sens:1.30,
+   title:'What this heat can mean with a heart condition',
+   how:'Heat makes the heart pump harder to move blood to the skin, and fluid loss lowers blood volume. For a heart already under strain this raises the chance of chest pain, an irregular heartbeat or worsening heart failure. Some heart medicines, such as diuretics and beta-blockers, lower heat tolerance.',
+   watch:['Chest pain or tightness','Breathlessness or palpitations','Fainting or sudden weakness','New swelling in the ankles'],
+   help:['Stay in the coolest room during the afternoon','Ask your doctor how much to drink and whether medicines need review in summer','Do not stop or change medicines on your own']},
+  {id:'resp',name:'Respiratory',tag:'a breathing condition',sens:1.20,
+   title:'What this heat can mean with a breathing condition',
+   how:'Hot air makes breathing harder work, and hot days often bring more ground-level ozone and dust that irritate the airways. Asthma and COPD symptoms can flare up.',
+   watch:['Wheezing or chest tightness','More breathlessness than usual','Needing the reliever inhaler more often'],
+   help:['Keep your reliever inhaler with you and out of direct heat','Stay indoors during the hottest, dustiest hours','Follow your written action plan if symptoms rise']},
+  {id:'kidney',name:'Kidney-related',tag:'a kidney condition',sens:1.25,
+   title:'What this heat can mean with a kidney condition',
+   how:'Sweating without replacing fluid reduces blood flow to the kidneys. With existing kidney disease this can cause a sudden drop in kidney function. If you have a fluid limit or are on dialysis, staying in balance is harder in heat.',
+   watch:['Very little or very dark urine','Swelling, cramps or unusual tiredness','Confusion'],
+   help:['Follow the fluid plan from your kidney doctor and ask how to adjust it in heat','Avoid painkillers such as ibuprofen or diclofenac unless prescribed','Keep cool so you lose less fluid in the first place']},
+  {id:'diabetes',name:'Diabetes',tag:'diabetes',sens:1.20,
+   title:'What this heat can mean with diabetes',
+   how:'Dehydration can push blood sugar up, and high sugar causes more fluid loss. Nerve and blood-vessel damage can reduce sweating, so the body cools less well. Insulin and test strips lose strength if they get hot.',
+   watch:['Unusual thirst or frequent urination','Shakiness, sweating or confusion, which can be low sugar and not only heat','Dizziness'],
+   help:['Check blood sugar more often on hot days','Keep insulin and strips cool, never in a parked vehicle or direct sun','Carry water and a quick sugar source']},
+  {id:'htn',name:'Hypertension',tag:'high blood pressure',sens:1.15,
+   title:'What this heat can mean with high blood pressure',
+   how:'Heat widens blood vessels and fluid loss can make blood pressure fall, causing dizziness or fainting, especially when standing up. Diuretics and some other blood-pressure medicines increase fluid loss or blunt the body\u2019s response to heat.',
+   watch:['Dizziness when standing up','Fainting','Severe headache or palpitations'],
+   help:['Stand up slowly','Check your pressure if you have a monitor at home','Ask your doctor whether doses need review in summer; do not stop on your own']},
+  {id:'preg',name:'Pregnancy',tag:'pregnancy',sens:1.25,
+   title:'What this heat can mean during pregnancy',
+   how:'During pregnancy the body already works harder to stay cool and dehydrates more easily. Studies link high heat exposure with a greater risk of preterm birth and low birth weight.',
+   watch:['Dizziness or headache','Very little urine','Tightenings or contractions','Baby moving less than usual'],
+   help:['Rest in the coolest room through the afternoon','Drink water often','Contact your doctor, ANM or ASHA worker if you notice a warning sign']},
+  {id:'other',name:'Other condition',tag:'another long-term condition',sens:1.10,
+   title:'What this heat can mean with a long-term condition',
+   how:'Many long-term conditions and medicines change how the body handles heat, including mental-health conditions, obesity, skin conditions and medicines that reduce sweating.',
+   watch:['Your usual symptoms getting worse','Confusion','Not sweating even though it is hot'],
+   help:['Ask your doctor how heat affects your condition and medicines','Arrange for someone to check on you during a heat spell']}
+];
+const PROFILE=Object.fromEntries(PROFILES.map(p=>[p.id,p]));
+const LEVEL_HELP=[null,
+  ['Normal routine is fine; keep drinking water'],
+  ['Limit heavy outdoor work between noon and 3 pm','Keep ORS or salted lemon water at hand'],
+  ['Avoid going out between 11 am and 4 pm if you can','Check on elderly neighbours once a day'],
+  ['Stay indoors or go to a cooling centre during the afternoon','No outdoor work in peak hours','Check on vulnerable family and neighbours twice a day']
+];
+const SEASONS=[
+  {y:2019,days:14,spell:4,peak:43.1,month:'June'},
+  {y:2020,days:9, spell:3,peak:42.2,month:'May'},
+  {y:2021,days:11,spell:3,peak:42.6,month:'June'},
+  {y:2022,days:27,spell:8,peak:45.4,month:'May'},
+  {y:2023,days:16,spell:5,peak:43.8,month:'June'},
+  {y:2024,days:31,spell:9,peak:46.1,month:'June'},
+  {y:2025,days:22,spell:6,peak:44.6,month:'June'},
+  {y:2026,days:19,spell:5,peak:44.0,month:'May'}
+];
+const DEPT=[
+  {name:'Municipal corporation',by:[null,
+    ['Keep drinking-water points working'],
+    ['Issue a public heat advisory','Check water points and shaded bus stops'],
+    ['Put cooling centres on standby with staff and water','Send water tankers to low-supply lanes','Sprinkle roads near markets in the afternoon'],
+    ['Open cooling centres and extend hours to 8 pm','Send water tankers to the top-ranked wards first','Set up shaded rest points at markets and bus stands']]},
+  {name:'Health department and hospitals',by:[null,
+    ['Routine surveillance'],
+    ['Remind health centres to stock ORS','Brief ASHA workers on warning signs'],
+    ['Stock ORS, IV fluids and ice packs at health centres','Keep one cool room ready in each centre','Start daily reporting of heat-illness cases'],
+    ['Station an ambulance in each top-ranked ward','Activate heat-stroke rooms in hospitals','ASHA home visits to elderly, pregnant and chronically ill residents']]},
+  {name:'Labour department',by:[null,
+    ['No change to work timings'],
+    ['Advise employers to give water and shade breaks'],
+    ['Advise shifting outdoor work to before 11 am and after 4 pm','Inspect large construction sites for water and shade'],
+    ['Direct that outdoor work stops from 11 am to 4 pm','Inspect construction, loading and brick-kiln sites','Coordinate with gig-platform and market associations']]},
+  {name:'Disaster management',by:[null,
+    ['Monitor the forecast'],
+    ['Circulate the 5-day outlook to ward officers'],
+    ['Send targeted SMS alerts to the top-ranked wards','Hold a daily coordination call'],
+    ['Activate the Heat Action Plan red-alert protocol','Send SMS and loudspeaker alerts to the top-ranked wards','Move reserve resources to wards where risk is still rising']]}
+];
+
+/* ---------- state ---------- */
+const KEY='heatshield.v1';
+const state={ward:'K',profile:'normal',day:0,tab:'today',mapSel:null,onboarded:false,
+  sim:{T:38.4,RH:37,S:760,W:10,V:62}};
+let draft={ward:'K',profile:'normal'};
+let lastPins={you:0,ref:0};
+try{
+  const s=JSON.parse(localStorage.getItem(KEY));
+  if(s&&WARD[s.ward]&&PROFILE[s.profile]){state.ward=s.ward;state.profile=s.profile;state.onboarded=true;}
+}catch(e){}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify({ward:state.ward,profile:state.profile}));}catch(e){}}
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const f1=n=>n.toFixed(1);
+function wx(w,d){const D=DAYS[d];return {T:D.T+w.dT,RH:clamp(D.RH+w.dRH,5,100),S:D.S,W:D.W,V:w.V};}
+const wardRisk=(w,d)=>risk(wx(w,d));
+const personal=(s,p)=>Math.min(100,Math.round(s*p.sens));
+const chip=(s,extra='')=>`<span class="chip ${LV[lvl(s)].c}">${LV[lvl(s)].name}${extra}</span>`;
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200);}
+function dayChips(){return `<div class="daychips" role="group" aria-label="Forecast day">${DAYS.map((d,i)=>`<button class="daychip" data-day="${i}" aria-pressed="${i===state.day}">${d.label}</button>`).join('')}</div>`;}
+function waterfall(x){
+  const e=explain(x); const max=Math.max(e.base,...e.rows.map(r=>Math.abs(r.v)),1);
+  const row=(label,v,cls,sign)=>`<div class="wf-row ${cls}"><span>${label}</span><span class="v">${sign}${Math.abs(Math.round(v))}</span><span class="b"><i style="width:${Math.min(100,Math.abs(v)/max*100)}%"></i></span></div>`;
+  const top=[...e.rows].filter(r=>r.v>0.5).sort((a,b)=>b.v-a.v).slice(0,2).map(r=>r.label.toLowerCase());
+  const cool=e.rows.filter(r=>r.v<-0.5).map(r=>r.label.toLowerCase());
+  let say=top.length?`Mostly driven by ${top.join(' and ')}.`:'No factor is pushing risk above a mild day.';
+  if(cool.length) say+=` ${cool.join(' and ').replace(/^./,c=>c.toUpperCase())} ${cool.length>1?'are':'is'} holding it down.`;
+  return `<p>${say}</p><div class="wf">
+    ${row('Mild reference day',e.base,'base','')}
+    ${e.rows.map(r=>row(r.label,r.v,r.v<0?'neg':'',r.v<0?'\u2212':'+')).join('')}
+    <div class="wf-total"><span>Health-risk score</span><span>${Math.round(e.total)} / 100</span></div></div>`;
+}
+
+/* ---------- views ---------- */
+function viewToday(){
+  const w=WARD[state.ward], p=PROFILE[state.profile], x=wx(w,state.day);
+  const area=risk(x), you=personal(area,p), L=lvl(you), isN=p.id==='normal';
+  const hi=heatIndex(x.T,x.RH), wb=wbgt(x);
+  const series=DAYS.map((d,i)=>wardRisk(w,i));
+  const peak=series.indexOf(Math.max(...series));
+  const say=isN
+    ? `<p>This is the health-risk score for people in ${w.name} ${state.day?('on '+DAYS[state.day].label.toLowerCase()):'today'}. It combines the heat itself with how exposed this ward is.</p>`
+    : `<p>The same heat scores <b>${area}</b> for someone with no known condition in ${w.name}. With ${p.tag} it weighs more heavily on the body.</p>`;
+  const help=[...p.help,...LEVEL_HELP[L]];
+  return `
+  <div class="view-head">
+    <h1>${w.name}, Ward ${w.id}</h1>
+    <p>${DAYS[state.day].label} in a simulated pre-monsoon heat spell.</p>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <section class="hero" aria-label="Health-risk score">
+        <div class="hero-top">
+          <div class="big">${you}<small>/100</small></div>
+          <div class="hero-say">${chip(you,isN?'':' for you')}${say}</div>
+        </div>
+        <div class="ruler${isN?'':' cmp'}">
+          <div class="pin pin-you" id="pinYou" style="left:${lastPins.you}%"><span>${isN?'This ward':'You'}</span><b>${you}</b></div>
+          <div class="track" aria-hidden="true">
+            <span class="seg l1" style="width:40%">Lower</span><span class="seg l2" style="width:20%">Moderate</span><span class="seg l3" style="width:20%">High</span><span class="seg l4" style="width:20%">Very high</span>
+          </div>
+          <div class="ticks" aria-hidden="true"><span style="left:0">0</span><span style="left:40%">40</span><span style="left:60%">60</span><span style="left:80%">80</span><span style="left:100%">100</span></div>
+          ${isN?'':`<div class="pin pin-ref" id="pinRef" style="left:${lastPins.ref}%"><b>${area}</b><span>No known condition</span></div>`}
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Next 5 days in this ward</h2>
+        <div class="days">
+          ${series.map((s,i)=>`<button class="day ${LV[lvl(s)].c}" data-day="${i}" aria-pressed="${i===state.day}" aria-label="${DAYS[i].label}: ${s}, ${LV[lvl(s)].name}">
+            <span class="col"><span class="bar" style="height:${s}%"></span></span>
+            <span class="n">${s}</span><span class="d">${DAYS[i].label}</span>
+            ${isN?'':`<span class="y">you ${personal(s,p)}</span>`}
+          </button>`).join('')}
+        </div>
+        <p class="note" style="margin-top:10px">Risk peaks on ${DAYS[peak].label.toLowerCase()} at ${series[peak]}. Select a day to see its conditions and reasons.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Why the score is ${area}</h2>
+        ${waterfall(x)}
+        <p class="note" style="margin-top:10px">Points each factor adds compared with a mild day. The production model would show SHAP values from the trained model here.</p>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel">
+        <h2>${p.title}</h2>
+        <p>${p.how}</p>
+        <div class="lists">
+          <div><h3>Watch for</h3><ul>${p.watch.map(t=>`<li>${t}</li>`).join('')}</ul></div>
+          <div><h3>What helps at ${LV[L].name.toLowerCase()} risk</h3><ul>${help.map(t=>`<li>${t}</li>`).join('')}</ul></div>
+        </div>
+        <p class="sos"><b>Heat stroke is an emergency.</b> Confusion, fainting, seizures or hot, dry skin need help at once. Call 108 or 112 and cool the person while you wait.</p>
+        <p class="note" style="margin-top:10px">General information, not medical advice. ${isN?'':`The ${p.sens.toFixed(2)}\u00d7 weighting for this profile is a placeholder until it is fitted to clinical evidence. `}<button class="linkbtn" data-open-profile>Change profile</button></p>
+      </section>
+
+      <section class="panel">
+        <h2>Conditions behind the score</h2>
+        <dl class="reads">
+          <div><dt>Air temperature</dt><dd>${f1(x.T)}<small> \u00b0C</small></dd></div>
+          <div><dt>Humidity</dt><dd>${Math.round(x.RH)}<small> %</small></dd></div>
+          <div><dt>Wind</dt><dd>${x.W}<small> km/h</small></dd></div>
+          <div><dt>Solar radiation</dt><dd>${x.S}<small> W/m\u00b2</small></dd></div>
+        </dl>
+        <dl class="idx">
+          <div><dt>Heat Index</dt><dd>${f1(hi)} \u00b0C</dd></div>
+          <div><dt>WBGT, estimated</dt><dd>${f1(wb)} \u00b0C</dd></div>
+          <div><dt>UTCI</dt><dd>In production</dd></div>
+        </dl>
+        <p class="note" style="margin-top:10px">Local vulnerability for this ward is ${w.V}/100. ${w.dT>0?`It runs about ${f1(w.dT)}\u00b0 hotter than the city average.`:w.dT<0?`It runs about ${f1(-w.dT)}\u00b0 cooler than the city average.`:'Its temperature matches the city average.'}</p>
+      </section>
+    </div>
+  </div>`;
+}
+
+function viewMap(){
+  const d=state.day, sel=WARD[state.mapSel||state.ward];
+  const polys=WARDS.map(w=>{
+    const [r,c]=w.cell, pts=[MESH[r][c],MESH[r][c+1],MESH[r+1][c+1],MESH[r+1][c]];
+    const cx=pts.reduce((a,p)=>a+p[0],0)/4, cy=pts.reduce((a,p)=>a+p[1],0)/4, s=wardRisk(w,d);
+    return `<g class="${LV[lvl(s)].c}">
+      <polygon class="ward${w.id===sel.id?' sel':''}" points="${pts.map(p=>p.join(',')).join(' ')}" data-ward="${w.id}" tabindex="0" role="button" aria-label="Ward ${w.id}, ${w.name}: ${s}, ${LV[lvl(s)].name}"/>
+      <text class="wl" x="${cx}" y="${cy-4}" font-size="20">${w.id}${w.id===state.ward?' \u2302':''}</text>
+      <text class="wl" x="${cx}" y="${cy+25}" font-size="31">${s}</text></g>`;
+  }).join('');
+  const x=wx(sel,d), s=risk(x);
+  const ranked=[...WARDS].map(w=>({w,s:wardRisk(w,d)})).sort((a,b)=>b.s-a.s);
+  return `
+  <div class="view-head">
+    <h1>Ward-level heat-health map</h1>
+    <p>Each ward is scored on the heat it will face and how vulnerable its people are. Select a ward for its details.</p>
+  </div>
+  <div style="margin-bottom:14px">${dayChips()}</div>
+  <div class="grid2">
+    <section class="panel">
+      <div class="mapwrap">
+        <svg viewBox="10 10 600 420" role="group" aria-label="Map of 12 wards coloured by risk">${polys}</svg>
+      </div>
+      <div class="legend">
+        <span class="l4"><i></i>Very high, 80+</span><span class="l3"><i></i>High, 60 to 79</span><span class="l2"><i></i>Moderate, 40 to 59</span><span class="l1"><i></i>Lower, under 40</span><span>\u2302 your area</span>
+      </div>
+      <p class="note" style="margin-top:8px">Illustrative city with 12 wards. A deployment would load real ward boundaries.</p>
+    </section>
+    <div class="stack">
+      <section class="panel">
+        <h2>Ward ${sel.id}, ${sel.name}</h2>
+        <p>${chip(s)} <b style="margin-left:6px">${s} / 100</b> on ${DAYS[d].label.toLowerCase()}</p>
+        <dl class="kv">
+          <dt>Air temperature</dt><dd>${f1(x.T)} \u00b0C</dd>
+          <dt>Humidity</dt><dd>${Math.round(x.RH)} %</dd>
+          <dt>Wind</dt><dd>${x.W} km/h</dd>
+          <dt>Solar radiation</dt><dd>${x.S} W/m\u00b2</dd>
+          <dt>WBGT, estimated</dt><dd>${f1(wbgt(x))} \u00b0C</dd>
+          <dt>Vulnerability index</dt><dd>${sel.V} / 100</dd>
+          <dt>Residents aged 60+</dt><dd>${sel.elderly} %</dd>
+          <dt>Outdoor workers</dt><dd>${sel.outdoor} %</dd>
+          <dt>Green cover</dt><dd>${sel.green} %</dd>
+        </dl>
+        <button class="btn" data-set-area="${sel.id}" ${sel.id===state.ward?'disabled':''}>${sel.id===state.ward?'This is your area':'Set as my area'}</button>
+      </section>
+      <section class="panel">
+        <h2>All wards, highest first</h2>
+        <div class="scroll"><table>
+          <thead><tr><th>Ward</th><th>Score</th><th>Level</th></tr></thead>
+          <tbody>${ranked.map(r=>`<tr><td><button class="linkbtn" data-ward="${r.w.id}">${r.w.id}, ${r.w.name}</button></td><td>${r.s}</td><td>${LV[lvl(r.s)].name}</td></tr>`).join('')}</tbody>
+        </table></div>
+      </section>
+    </div>
+  </div>`;
+}
+
+function wardHistory(w){
+  return SEASONS.map(s=>({...s,days:Math.max(1,Math.round(s.days*(1+0.14*w.dT))),spell:Math.max(1,Math.round(s.spell*(1+0.1*w.dT))),peak:s.peak+w.dT}));
+}
+function viewHistory(){
+  const w=WARD[state.ward], H=wardHistory(w);
+  const max=Math.max(...H.map(h=>h.days)), worst=H.reduce((a,b)=>b.days>a.days?b:a);
+  const first3=(H[0].days+H[1].days+H[2].days)/3, last3=(H[5].days+H[6].days+H[7].days)/3;
+  const bw=40,gap=14,x0=14,base=180;
+  const bars=H.map((h,i)=>{const hgt=h.days/max*140, x=x0+i*(bw+gap);
+    return `<rect x="${x}" y="${base-hgt}" width="${bw}" height="${hgt}" rx="2" fill="${h===worst?'var(--r4)':'var(--r3)'}"/>
+      <text x="${x+bw/2}" y="${base-hgt-6}" text-anchor="middle" font-weight="700">${h.days}</text>
+      <text class="yr" x="${x+bw/2}" y="${base+18}" text-anchor="middle">${h.y}</text>`;}).join('');
+  const analogs=[...H].sort((a,b)=>b.spell-a.spell).slice(0,3);
+  return `
+  <div class="view-head">
+    <h1>Past heat in ${w.name}</h1>
+    <p>How heat has behaved in Ward ${w.id} over the last eight summers, and what it did to people's health where records allow.</p>
+  </div>
+  <div class="grid2">
+    <div class="stack">
+      <section class="panel">
+        <h2>Extreme-heat days each summer</h2>
+        <p>The worst summer was ${worst.y}, with ${worst.days} extreme-heat days and a ${worst.spell}-day spell. The last three summers averaged ${Math.round(last3)} such days against ${Math.round(first3)} in 2019 to 2021.</p>
+        <div class="scroll" style="margin-top:8px"><svg class="chart" viewBox="0 0 450 205" style="width:100%;height:auto" role="img" aria-label="Bar chart of extreme-heat days by year">
+          <line x1="6" x2="444" y1="${base}" y2="${base}" stroke="var(--line)"/>${bars}</svg></div>
+        <p class="note">An extreme-heat day is one with a maximum of 40 \u00b0C or more. Figures are simulated; a deployment would compute them from IMD station data and reanalysis.</p>
+      </section>
+      <section class="panel">
+        <h2>Season by season</h2>
+        <div class="scroll"><table>
+          <thead><tr><th>Summer</th><th>Extreme days</th><th>Longest spell</th><th>Peak</th></tr></thead>
+          <tbody>${H.map(h=>`<tr><td>${h.y}</td><td>${h.days}</td><td>${h.spell} days</td><td>${f1(h.peak)} \u00b0C</td></tr>`).join('')}</tbody>
+        </table></div>
+      </section>
+    </div>
+    <div class="stack">
+      <section class="panel">
+        <h2>Health impact in past heat spells</h2>
+        <p>No health records are connected to this prototype, so no figures are shown. Nothing here is estimated or invented.</p>
+        <p style="margin-top:8px">Once a health department authorises aggregated, anonymised data, this panel answers:</p>
+        <p class="ask" style="margin-top:10px">When Ward ${w.id} last had a spell like the one forecast, how many more people needed care than in a normal week?</p>
+        <div class="slots">
+          <div class="slot"><span class="st">Not connected</span><h3>Emergency visits for heat illness</h3><p>Needs heat-related illness surveillance reports.</p></div>
+          <div class="slot"><span class="st">Not connected</span><h3>Hospital admissions</h3><p>Needs district and private hospital records.</p></div>
+          <div class="slot"><span class="st">Not connected</span><h3>Deaths during heat spells</h3><p>Needs civil registration death records.</p></div>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Past spells most like this forecast</h2>
+        <p>The coming five days in this ward resemble these earlier spells. Their health outcomes become the reference for what to expect.</p>
+        <div class="scroll" style="margin-top:8px"><table>
+          <thead><tr><th>Spell</th><th>Length</th><th>Peak</th><th>Health impact</th></tr></thead>
+          <tbody>${analogs.map(a=>`<tr><td>${a.month} ${a.y}</td><td>${a.spell} days</td><td>${f1(a.peak)} \u00b0C</td><td class="locked">Awaiting records</td></tr>`).join('')}</tbody>
+        </table></div>
+      </section>
+    </div>
+  </div>`;
+}
+
+const SIMCTRL=[
+  ['T','Air temperature','\u00b0C',25,48,0.1],
+  ['RH','Humidity','%',10,90,1],
+  ['W','Wind','km/h',0,40,1],
+  ['S','Solar radiation','W/m\u00b2',0,1000,10],
+  ['V','Area vulnerability','/100',0,100,1]
+];
+const PRESETS=[
+  ['Dry heatwave',{T:45,RH:18,S:920,W:14,V:62}],
+  ['Humid heat',{T:36,RH:72,S:640,W:5,V:62}],
+  ['Cloudy and breezy',{T:33,RH:50,S:220,W:24,V:62}],
+  ['Same heat, vulnerable ward',{T:38.4,RH:37,S:760,W:10,V:92}]
+];
+function viewModel(){
+  return `
+  <div class="view-head">
+    <h1>Live model</h1>
+    <p>Move the inputs and watch the health-risk score respond. This is how the scoring behaves for any ward on any day.</p>
+  </div>
+  <div class="grid2">
+    <section class="panel">
+      <h2>Inputs</h2>
+      <div class="presets">${PRESETS.map((p,i)=>`<button class="daychip" data-preset="${i}">${p[0]}</button>`).join('')}</div>
+      <div class="ctrl">
+        ${SIMCTRL.map(([k,label,unit,min,max,step])=>`<label>${label}<output id="out-${k}"></output>
+          <input type="range" data-sim="${k}" min="${min}" max="${max}" step="${step}" value="${state.sim[k]}"></label>`).join('')}
+      </div>
+    </section>
+    <section class="panel" aria-live="polite">
+      <h2>Health-risk score</h2>
+      <div id="simOut"></div>
+    </section>
+  </div>
+  <section class="panel" style="margin-top:16px">
+    <h2>Where machine learning comes in</h2>
+    <p style="max-width:75ch">There is no chatbot here. The model's one job is to predict health risk three to five days ahead. This prototype uses a transparent formula in its place so the behaviour can be inspected.</p>
+    <div class="pipe">
+      <div class="box"><h3>Training data</h3><ul>
+        <li>Past weather by ward</li><li>Thermal stress: Heat Index, WBGT, UTCI</li><li>Vulnerability: age, outdoor work, green cover, health conditions</li><li>Authorised health outcomes</li></ul></div>
+      <div class="arr" aria-hidden="true"></div>
+      <div class="box mid"><h3>Model</h3><p class="note" style="margin-top:4px">XGBoost or Random Forest, trained to link heat conditions to health outcomes in each ward.</p></div>
+      <div class="arr" aria-hidden="true"></div>
+      <div class="box"><h3>Output</h3><ul>
+        <li>Health-risk score per ward for the next 3 to 5 days</li><li>SHAP values that explain each score</li><li>Ranked wards for action</li></ul></div>
+    </div>
+  </section>`;
+}
+function updateSim(){
+  const x=state.sim, s=risk(x);
+  for(const [k,,unit] of SIMCTRL){const o=$('#out-'+k); if(o) o.textContent=(k==='T'?f1(x[k]):x[k])+(unit==='/100'?' / 100':' '+unit);}
+  const out=$('#simOut'); if(!out) return;
+  out.innerHTML=`
+    <div class="simscore"><div class="big">${s}<small>/100</small></div><div style="padding-bottom:6px">${chip(s)}</div></div>
+    <div class="meter" aria-hidden="true"><i style="left:${s}%"></i></div>
+    <dl class="idx" style="margin:0 0 16px">
+      <div><dt>Heat Index</dt><dd>${f1(heatIndex(x.T,x.RH))} \u00b0C</dd></div>
+      <div><dt>WBGT, estimated</dt><dd>${f1(wbgt(x))} \u00b0C</dd></div>
+      <div><dt>Wet-bulb</dt><dd>${f1(wetBulb(x.T,x.RH))} \u00b0C</dd></div>
+    </dl>
+    <h3>Why</h3>${waterfall(x)}`;
+}
+
+function viewActions(){
+  const d=state.day;
+  const ranked=WARDS.map(w=>({w,s:wardRisk(w,d),rise:Math.max(...DAYS.map((_,i)=>wardRisk(w,i)))-wardRisk(w,0)})).sort((a,b)=>b.s-a.s);
+  const top=ranked.slice(0,4), L=lvl(ranked[0].s);
+  const riser=[...ranked].sort((a,b)=>b.rise-a.rise)[0];
+  const counts=[4,3,2,1].map(l=>[l,ranked.filter(r=>lvl(r.s)===l).length]).filter(c=>c[1]);
+  const why=w=>{const b=[`${w.outdoor}% outdoor workers`,`${w.elderly}% aged 60+`,`${w.green}% green cover`]; if(w.dT>=1) b.push(`${f1(w.dT)}\u00b0 hotter than the city average`); return b.join(', ');};
+  return `
+  <div class="view-head">
+    <h1>Where to act first</h1>
+    <p>For ward officers and departments. The ranking turns each day's forecast into an order of priority.</p>
+    <div class="flow" aria-label="Forecast, then risk, then priority, then action"><span>Forecast</span><i></i><span>Risk</span><i></i><span>Priority</span><i></i><span>Action</span></div>
+  </div>
+  <div style="margin-bottom:14px">${dayChips()}</div>
+  <div class="grid2">
+    <section class="panel">
+      <h2>Priority wards on ${DAYS[d].label.toLowerCase()}</h2>
+      <ol class="rank">
+        ${top.map(r=>`<li><div><h3>Ward ${r.w.id}, ${r.w.name} ${chip(r.s)}</h3><p>${why(r.w)}</p></div><div class="sc">${r.s}</div></li>`).join('')}
+      </ol>
+    </section>
+    <div class="stack">
+      <section class="panel">
+        <h2>City outlook</h2>
+        <p>${counts.map(c=>`<b>${c[1]}</b> ${c[1]>1?'wards':'ward'} at ${LV[c[0]].name.toLowerCase()}`).join(', ')} on ${DAYS[d].label.toLowerCase()}.</p>
+        <p style="margin-top:8px">Risk climbs fastest in <b>Ward ${riser.w.id}, ${riser.w.name}</b>: up ${riser.rise} points from today to its peak. Move resources there before it peaks.</p>
+      </section>
+      <section class="panel">
+        <h2>Who is most exposed</h2>
+        <p>Elderly residents, outdoor workers, pregnant women, people with heart, kidney, breathing or metabolic conditions, and households in dense areas with little shade. The vulnerability index combines these for each ward.</p>
+      </section>
+    </div>
+  </div>
+  <section class="panel" style="margin-top:16px">
+    <h2>Recommended actions at ${LV[L].name.toLowerCase()} risk</h2>
+    <p class="note" style="margin-bottom:12px">Based on the highest-scoring ward on ${DAYS[d].label.toLowerCase()}. Departments adapt these to the local Heat Action Plan.</p>
+    <div class="depts">
+      ${DEPT.map(dp=>`<div><h3>${dp.name}</h3><ul>${dp.by[L].map(a=>`<li>${a}</li>`).join('')}</ul></div>`).join('')}
+    </div>
+  </section>`;
+}
+
+/* ---------- render ---------- */
+const VIEWS={today:viewToday,map:viewMap,history:viewHistory,model:viewModel,actions:viewActions};
+function render(){
+  const w=WARD[state.ward], p=PROFILE[state.profile];
+  $('#who').innerHTML=`<b>${w.name}, Ward ${w.id}</b><span>${p.name}</span>`;
+  $('#who').setAttribute('aria-label',`Change area or health profile. Now ${w.name}, ${p.name}`);
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===state.tab));
+  $('#main').innerHTML=VIEWS[state.tab]();
+  if(state.tab==='model') updateSim();
+  if(state.tab==='today'){
+    const area=wardRisk(w,state.day), you=personal(area,p);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const a=$('#pinYou'), b=$('#pinRef');
+      if(a) a.style.left=you+'%'; if(b) b.style.left=area+'%';
+      lastPins={you,ref:area};
+    }));
+  }
+}
+
+/* ---------- profile sheet ---------- */
+function drawSheet(){
+  $('#optWards').innerHTML=WARDS.map(w=>`<button class="opt" data-pick-ward="${w.id}" aria-pressed="${draft.ward===w.id}">${w.name}<small>Ward ${w.id}</small></button>`).join('');
+  $('#optProfiles').innerHTML=PROFILES.map(p=>`<button class="opt" data-pick-profile="${p.id}" aria-pressed="${draft.profile===p.id}">${p.name}</button>`).join('');
+}
+function openSheet(first){
+  draft={ward:state.ward,profile:state.profile};
+  $('#sheetTitle').textContent=first?'Set up your heat profile':'Your area and health profile';
+  $('#sheetLead').textContent=first?'HEAT-SHIELD shows what the coming heat means for your area and your health. Choose both once.':'Risk scores and advice follow these two choices.';
+  drawSheet(); $('#veil').hidden=false; $('#sheetTitle').focus();
+}
+function closeSheet(){ $('#veil').hidden=true; state.onboarded=true; $('#who').focus(); }
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button,[data-ward]'); if(!t) return;
+  const d=t.dataset;
+  if(d.tab){state.tab=d.tab;render();window.scrollTo(0,0);}
+  else if(d.day!==undefined){state.day=+d.day;render();}
+  else if(d.ward){state.mapSel=d.ward;render();}
+  else if(d.setArea){state.ward=d.setArea;persist();render();toast('Area set to '+WARD[state.ward].name);}
+  else if(d.preset!==undefined){Object.assign(state.sim,PRESETS[+d.preset][1]);render();}
+  else if(d.pickWard){draft.ward=d.pickWard;drawSheet();}
+  else if(d.pickProfile){draft.profile=d.pickProfile;drawSheet();}
+  else if(t.id==='who'||d.openProfile!==undefined){openSheet(false);}
+  else if(t.id==='saveProfile'){state.ward=draft.ward;state.profile=draft.profile;state.mapSel=null;persist();closeSheet();render();toast('Profile saved');}
+});
+document.addEventListener('input',e=>{
+  const k=e.target.dataset&&e.target.dataset.sim; if(!k) return;
+  state.sim[k]=+e.target.value; updateSim();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('#veil').hidden){closeSheet();render();}
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('polygon[data-ward]')){e.preventDefault();state.mapSel=e.target.dataset.ward;render();}
+});
+$('#veil').addEventListener('click',e=>{if(e.target.id==='veil'&&state.onboarded){closeSheet();}});
+
+render();
+if(!state.onboarded) openSheet(true);
+</script>
+</body>
+</html>
